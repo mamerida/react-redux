@@ -15,13 +15,32 @@ export const reducer = (state= initialState,action) =>{
                 entities: state.entities.concat({...action.payLoad})
             }
         }
+        //creo un caso para completar y actualizar los  ToDo
+        //verifico que el ToDo seleccionado sea el del arreglo y lo devuelvo con su propieadad cambiada 
+        case 'todo/complete':{ 
+            const newTodos = state.entities.map(todo=>{
+                if(todo.id === action.payload.id){
+                    return {...todo, completed: !todo.completed}
+                }else{
+                    return todo
+                }
+            })
+            return{
+                ...state,
+                entities: newTodos
+            }
+        }
     }
     return state 
 }
 
 const ToDoItem = ({todo}) =>{
+    const dispatch = useDispatch()
     return(
-        <li>{todo.title}</li>
+        <li 
+        onClick={()=> dispatch({type:'todo/complete' , payload: todo }) }
+        style={{textDecoration : todo.completed ? 'line-through' : "none" , cursor : 'pointer' }}
+        >{todo.title}</li>
     )
 }
 
@@ -39,7 +58,7 @@ const App = () =>{
              return 
         }
         const id  = Math.random().toString(36);
-        const todo = { title: value , completado :false , id }
+        const todo = { title: value , completed :false , id }
         dispatch ({type:'todo/add' , payLoad:todo})
         setValue("")
 
