@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux"
 //por convencion genero un initial state que va a obtener el estado inicial de mi aplicacion
 const initialState ={
     entities:[],
+    //filtro de visibilidad
+    filter:"all", // complete || incompleted
 }
 
 export const reducer = (state= initialState,action) =>{
@@ -30,6 +32,12 @@ export const reducer = (state= initialState,action) =>{
                 entities: newTodos
             }
         }
+        case 'filter/set':{
+            return{
+                ...state,
+                filter:action.payload,
+            }
+        }
     }
     return state 
 }
@@ -44,9 +52,21 @@ const ToDoItem = ({todo}) =>{
     )
 }
 
+const selectTodos = state =>{
+    const {entities , filter} = state
+    if(filter === "complete"){
+        return entities.filter(todo=> todo.completed)
+    }
+    if(filter === "incomplete"){
+        return entities.filter(todo=> !todo.completed)
+    }
+    return entities
+}
+
 const App = () =>{
     const dispatch = useDispatch()
-    const state = useSelector(x => x)
+    //use selector nos permite seleccionar parte de nuestro estado
+    const todos = useSelector(selectTodos)
     //aca guardo el input hasta el submit
     const [value,setValue] =useState("")
 
@@ -72,11 +92,11 @@ const App = () =>{
             </form><br/>
             {/* al presionar el onClick aun que cambie el estado no vuelve a renderizar el componente esto pasa si no devuelvo una copia en los switch case 
                 generando mutabilidad  */}
-            <button >Mostrar Todos </button>
-            <button>Completados</button>
-            <button>Incompletos </button>
+            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'all'})} >Mostrar Todos </button>
+            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'complete'})} >Completados</button>
+            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'incomplete'})}>Incompletos </button>
             <ul>
-                {state.entities.map( todo => <ToDoItem  key={todo.id} todo={todo} />)}
+                {todos.map( todo => <ToDoItem  key={todo.id} todo={todo} />)}
             </ul>
         </div>
     )
