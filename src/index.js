@@ -1,15 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App , {reducer} from './App';
-import {createStore} from 'redux';
+import App , {reducer , asyncMiddleware} from './App';
+import {createStore, applyMiddleware} from 'redux';
 // provider es un componente que utiliza la propiedad de children para mantener el estado de la aplicacion
 //esto se hace creando un store pasandolo como parametro y metiendo el App como children
 import { Provider } from 'react-redux';
 import reportWebVitals from './reportWebVitals';
 
 // no se debe importar de app el reducer
-const store = createStore(reducer)
+//para poder usar middleware debo importar applyMiddleware desde redux y pasarle mi middleware como argumento
+
+const store = createStore(reducer ,applyMiddleware(asyncMiddleware))
 
 
 ReactDOM.render(

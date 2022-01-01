@@ -1,6 +1,23 @@
 import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {combineReducers} from 'redux'
+
+//para poder trabajar con acciones asyncronas mediante redux. debo usar middlewares que interceptan el dispatch 
+//y nos permite generar acciones dependiendo del estado de la conexion 
+export const asyncMiddleware = store => next => action =>{
+    if(typeof action === "function"){
+        return action(store.dispatch,store.getState)
+    }
+
+     return next(action)
+}
+
+//acciones que se puden llamar, llamado a una API, creacion de una API, error de una API
+export const fetchThunk = () => dispatch =>{
+    console.log("soy un thunk" ,dispatch)
+}
+
+
 //por convencion genero un initial state que va a obtener el estado inicial de mi aplicacion
 //al usar combineReducers el initial state no es necesario 
 // const initialState ={
@@ -107,6 +124,7 @@ const App = () =>{
             <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'all'})} >Mostrar Todos </button>
             <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'complete'})} >Completados</button>
             <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'incomplete'})}>Incompletos </button>
+            <button onClick={ () => dispatch(fetchThunk())}>Fech </button>
             <ul>
                 {todos.map( todo => <ToDoItem  key={todo.id} todo={todo} />)}
             </ul>
