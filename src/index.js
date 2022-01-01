@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App , {reducer , asyncMiddleware} from './App';
+import App , {reducer } from './App';
+import {asyncMiddleware} from './middlewares/async'
 import {createStore, applyMiddleware} from 'redux';
 // provider es un componente que utiliza la propiedad de children para mantener el estado de la aplicacion
 //esto se hace creando un store pasandolo como parametro y metiendo el App como children

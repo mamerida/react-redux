@@ -1,29 +1,14 @@
 import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {combineReducers} from 'redux'
+import {setComplete,setFilter,fetchThunk } from './features/todos'
 
-//para poder trabajar con acciones asyncronas mediante redux. debo usar middlewares que interceptan el dispatch 
-//y nos permite generar acciones dependiendo del estado de la conexion 
-export const asyncMiddleware = store => next => action =>{
-    if(typeof action === "function"){
-        return action(store.dispatch,store.getState)
-    }
 
-     return next(action)
-}
 
-//acciones que se puden llamar, llamado a una API, creacion de una API, error de una API
-export const fetchThunk = () =>  async dispatch =>{
-    dispatch({type:'todos/pending'})
-    try{
-        const response = await fetch('https://jsonplaceholder.typicode.com/todos')
-        const data = await response.json()
-        const todos = data.slice(0,10)
-        dispatch({type:"todos/fulfilled" ,payload : todos})
-    }catch (e){
-        dispatch({type:'todos/error', error: e.message})    
-    }
-}
+
+
+
+
 
 
 //por convencion genero un initial state que va a obtener el estado inicial de mi aplicacion
@@ -111,7 +96,7 @@ const ToDoItem = ({todo}) =>{
     const dispatch = useDispatch()
     return(
         <li 
-        onClick={()=> dispatch({type:'todo/complete' , payload: todo }) }
+        onClick={()=> dispatch(setComplete(todo)) }
         style={{textDecoration : todo.completed ? 'line-through' : "none" , cursor : 'pointer' }}
         >{todo.title}</li>
     )
@@ -161,6 +146,7 @@ const App = () =>{
             <p>{status.error}</p>
         )
     }
+
     return(
         <div>
             <form >
@@ -169,9 +155,9 @@ const App = () =>{
             </form><br/>
             {/* al presionar el onClick aun que cambie el estado no vuelve a renderizar el componente esto pasa si no devuelvo una copia en los switch case 
                 generando mutabilidad  */}
-            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'all'})} >Mostrar Todos </button>
-            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'complete'})} >Completados</button>
-            <button onClick={ () => dispatch({type: 'filter/set' ,payload: 'incomplete'})}>Incompletos </button>
+            <button onClick={ () => dispatch(setFilter("all"))} >Mostrar Todos </button>
+            <button onClick={ () => dispatch(setFilter("complete"))} >Completados</button>
+            <button onClick={ () => dispatch(setFilter("incomplete"))}>Incompletos </button>
             <button onClick={ () => dispatch(fetchThunk())}>Fech </button>
             <ul>
                 {todos.map( todo => <ToDoItem  key={todo.id} todo={todo} />)}
