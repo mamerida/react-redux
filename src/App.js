@@ -1,96 +1,10 @@
 import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import {combineReducers} from 'redux'
-import {setComplete,setFilter,fetchThunk } from './features/todos'
+import {setComplete,setFilter,fetchThunk,selectStatus,selectTodos } from './features/todos'
 
 
 
 
-
-
-
-
-
-//por convencion genero un initial state que va a obtener el estado inicial de mi aplicacion
-//al usar combineReducers el initial state no es necesario 
-// const initialState ={
-//     entities:[],
-//     //filtro de visibilidad
-//     filter:"all", // complete || incompleted
-// }
-
-//para poder dividir un poco las responsabilidades del reducer, lo que vamos a realizar es una division de las resposabilidades
-// un reducer que se encargue de acutalizar los objetos y otro el estado
-
-//separamos la logica que manejaba la propiedad de filter 
-export const filterReducer = (state='all', action) =>{
-    switch (action.type){
-        case 'filter/set':
-            return action.payload
-        default:
-            return state
-    }
-}
-//se maneja con strings el manejo de estaddos de conexion con APIS por que de esta manera permite manejar mas estados como pendiente exito error o sin consultar 
-const initialFetching = { loading : 'idle' , error:null }
-export const fetchinReducer = (state= initialFetching , action) =>{
-    switch(action.type){
-        case 'todos/pending':{
-            return {...state,loading:'pending'}
-        }
-        case 'todos/fulfilled':{
-            return{...state, loading:'succeded'}
-        }
-        case 'todos/error':{
-            return {error: action.error, loading:'rejected'}
-        }
-        default :{
-            return state 
-        }
-
-    }
-}
-
-export const todosReducer = (state = [],action) =>{
-    switch(action.type) {
-        case 'todos/fulfilled':{
-            return action.payload
-        }
-        case 'todo/add': {
-            //siempre se debe retornar una nueva copia del estado
-            //cuando no lo hacemos es usamos la mutabilidad
-            //en este caso el reducer va a repartir la responsabilidad por ende no devuelve un objeto
-            return state.concat({...action.payload})
-        }
-        case 'todo/complete':{ 
-            const newTodos = state.map(todo=>{
-                if(todo.id === action.payload.id){
-                    return {...todo, completed: !todo.completed}
-                }else{
-                    return todo
-                }
-            })
-            return newTodos
-        }
-        default:
-            return state 
-
-    
-    }
-}
-// combineReducers permite dividir propiedad a mantener junto con la funcion que lo va a realizar 
-export const reducer = combineReducers( {
-    //al estar trabajando con el estado de los todos no da sentido que traigamos al mismo nivel que los otros.
-    //a nivel convencion es preferible generar el objeto todo y dentro del mismo combinar los reducers que necesito 
-    todos: combineReducers({
-        entities:todosReducer,
-        status:fetchinReducer,
-    }),
-    filter: filterReducer,
-
-})
-
-const selectStatus = state => state.todos.status
 
 const ToDoItem = ({todo}) =>{
     const dispatch = useDispatch()
@@ -102,16 +16,7 @@ const ToDoItem = ({todo}) =>{
     )
 }
 
-const selectTodos = state =>{
-    const {todos : {entities} , filter} = state
-    if(filter === "complete"){
-        return entities.filter(todo=> todo.completed)
-    }
-    if(filter === "incomplete"){
-        return entities.filter(todo=> !todo.completed)
-    }
-    return entities
-}
+
 
 const App = () =>{
     const dispatch = useDispatch()
