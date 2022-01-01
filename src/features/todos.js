@@ -1,4 +1,5 @@
 import {combineReducers} from 'redux'
+import{makeFetchingReducer , makeFilterReducer} from './utils'
 
 //para poder mejorar el escalado del proyecto. Vamos a usar action creator. Sirve para agrupar todas las acciones de mi codigo y asi 
 //ante futuros cambios evitar tener que retocar todo el codigo 1 por 1 
@@ -49,34 +50,14 @@ export const fetchThunk = () =>  async dispatch =>{
 
 
 
-//separamos la logica que manejaba la propiedad de filter 
-export const filterReducer = (state='all', action) =>{
-    switch (action.type){
-        case 'filter/set':
-            return action.payload
-        default:
-            return state
-    }
-}
-//se maneja con strings el manejo de estaddos de conexion con APIS por que de esta manera permite manejar mas estados como pendiente exito error o sin consultar 
-const initialFetching = { loading : 'idle' , error:null }
-export const fetchinReducer = (state= initialFetching , action) =>{
-    switch(action.type){
-        case 'todos/pending':{
-            return {...state,loading:'pending'}
-        }
-        case 'todos/fulfilled':{
-            return{...state, loading:'succeded'}
-        }
-        case 'todos/error':{
-            return {error: action.error, loading:'rejected'}
-        }
-        default :{
-            return state 
-        }
+export const filterReducer =makeFilterReducer(['filter/set'])
 
-    }
-}
+
+const fetchingReducer = makeFetchingReducer([
+    'todos/pending',
+    'todos/fulfielled',
+    'todos/rejected'
+])
 
 export const todosReducer = (state = [],action) =>{
     switch(action.type) {
@@ -111,7 +92,7 @@ export const reducer = combineReducers( {
     //a nivel convencion es preferible generar el objeto todo y dentro del mismo combinar los reducers que necesito 
     todos: combineReducers({
         entities:todosReducer,
-        status:fetchinReducer,
+        status:fetchingReducer,
     }),
     filter: filterReducer,
 
