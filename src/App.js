@@ -21,7 +21,7 @@ export const fetchThunk = () =>  async dispatch =>{
         const todos = data.slice(0,10)
         dispatch({type:"todos/fulfilled" ,payload : todos})
     }catch (e){
-        dispatch({type:'todos/pending', error: e.message})    
+        dispatch({type:'todos/error', error: e.message})    
     }
 }
 
@@ -44,6 +44,25 @@ export const filterReducer = (state='all', action) =>{
             return action.payload
         default:
             return state
+    }
+}
+//se maneja con strings el manejo de estaddos de conexion con APIS por que de esta manera permite manejar mas estados como pendiente exito error o sin consultar 
+const initialFetching = { loading : 'idle' , error:null }
+export const fetchinReducer = (state= initialFetching , action) =>{
+    switch(action.type){
+        case 'todos/pending':{
+            return {...state,loading:'pending'}
+        }
+        case 'todos/fulfilled':{
+            return{...state, loading:'succeded'}
+        }
+        case 'todos/error':{
+            return {error: action.error, loading:'rejected'}
+        }
+        default :{
+            return state 
+        }
+
     }
 }
 
@@ -76,11 +95,17 @@ export const todosReducer = (state = [],action) =>{
 }
 // combineReducers permite dividir propiedad a mantener junto con la funcion que lo va a realizar 
 export const reducer = combineReducers( {
-    entities: todosReducer,
+    //al estar trabajando con el estado de los todos no da sentido que traigamos al mismo nivel que los otros.
+    //a nivel convencion es preferible generar el objeto todo y dentro del mismo combinar los reducers que necesito 
+    todos: combineReducers({
+        entities:todosReducer,
+        status:fetchinReducer,
+    }),
     filter: filterReducer,
 
 })
 
+const selectStatus = state => state.todos.status
 
 const ToDoItem = ({todo}) =>{
     const dispatch = useDispatch()
@@ -93,7 +118,7 @@ const ToDoItem = ({todo}) =>{
 }
 
 const selectTodos = state =>{
-    const {entities , filter} = state
+    const {todos : {entities} , filter} = state
     if(filter === "complete"){
         return entities.filter(todo=> todo.completed)
     }
@@ -110,6 +135,9 @@ const App = () =>{
     //aca guardo el input hasta el submit
     const [value,setValue] =useState("")
 
+    //voy a crear un mensaje de cargando y para eso necesito individualizar el status de mis todos
+    const status = useSelector(selectStatus)
+
     //funcion para enviar lista de ToDo a la persistencia y despues mostrarlos
     const submit = e => {
         e.preventDefault();
@@ -123,7 +151,16 @@ const App = () =>{
         setValue("")
 
     }
-
+    if(status.loading ==="pending"){
+        return(
+            <p>Cargando...</p>
+        )
+    }
+    if(status.loading ==="rejected"){
+        return(
+            <p>{status.error}</p>
+        )
+    }
     return(
         <div>
             <form >
